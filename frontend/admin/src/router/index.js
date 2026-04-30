@@ -38,6 +38,12 @@ const routes = [
         component: () => import('../views/AdManagerView.vue'),
         meta: { roles: ['SUPER_ADMIN'] },
       },
+      {
+        path: 'menu',
+        name: 'MenuManagement',
+        component: () => import('../views/MenuView.vue'),
+        meta: { roles: ['SUPER_ADMIN', 'STORE_ADMIN'] },
+      },
     ],
   },
 ]
