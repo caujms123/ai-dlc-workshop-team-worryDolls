@@ -7,5 +7,11 @@ from app.models.login_attempt import LoginAttempt
 from app.models.table import TableInfo, TableSession
 from app.models.category import Category
 from app.models.menu import Menu
+from app.models.order import Order, OrderItem, OrderHistory
 
-__all__ = ["Store", "Admin", "Advertisement", "LoginAttempt", "TableInfo", "TableSession", "Category", "Menu"]
+__all__ = [
+    "Store", "Admin", "Advertisement", "LoginAttempt",
+    "TableInfo", "TableSession",
+    "Category", "Menu",
+    "Order", "OrderItem", "OrderHistory",
+]
