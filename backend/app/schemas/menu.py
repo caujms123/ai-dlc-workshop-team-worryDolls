@@ -4,7 +4,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
-from backend.app.schemas.category import CategoryResponse
+from app.schemas.category import CategoryResponse
 
 
 class MenuCreate(BaseModel):

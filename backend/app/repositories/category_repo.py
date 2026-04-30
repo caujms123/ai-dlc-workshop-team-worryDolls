@@ -5,7 +5,7 @@ import logging
 from sqlalchemy import select, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.models.category import Category
+from app.models.category import Category
 
 logger = logging.getLogger(__name__)
 
@@ -144,7 +144,7 @@ class CategoryRepository:
         Returns:
             Number of menus in the category.
         """
-        from backend.app.models.menu import Menu
+        from app.models.menu import Menu
 
         stmt = select(func.count()).where(Menu.category_id == category_id)
         result = await db.execute(stmt)

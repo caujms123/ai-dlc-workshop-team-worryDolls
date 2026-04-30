@@ -4,9 +4,9 @@ import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.models.category import Category
-from backend.app.models.menu import Menu
-from backend.app.repositories.category_repo import CategoryRepository
+from app.models.category import Category
+from app.models.menu import Menu
+from app.repositories.category_repo import CategoryRepository
 
 
 @pytest.fixture

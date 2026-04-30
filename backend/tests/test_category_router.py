@@ -4,10 +4,12 @@ import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 
-from backend.app.database import Base
-from backend.app.main import app
-from backend.tests.conftest import test_engine, TestSessionFactory
-from backend.app.database import get_db
+from app.database import Base
+from app.main import app
+from tests.conftest import test_engine, TestSessionFactory
+from app.database import get_db
+from app.models.category import Category
+from app.models.menu import Menu
 
 
 @pytest_asyncio.fixture
@@ -25,15 +27,18 @@ async def client():
 
     app.dependency_overrides[get_db] = override_get_db
 
+    tables = [Category.__table__, Menu.__table__]
     async with test_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        for table in tables:
+            await conn.run_sync(lambda sync_conn, t=table: t.create(sync_conn, checkfirst=True))
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         yield client
 
     async with test_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        for table in reversed(tables):
+            await conn.run_sync(lambda sync_conn, t=table: t.drop(sync_conn, checkfirst=True))
 
     app.dependency_overrides.clear()
 

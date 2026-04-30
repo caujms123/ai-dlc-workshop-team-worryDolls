@@ -1,69 +1,90 @@
-"""FastAPI application entry point."""
+"""FastAPI 애플리케이션 진입점."""
+
+import structlog
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+from app.config import settings
+from app.database import close_db, init_db
+from app.middleware.error_handler import (
+    general_exception_handler,
+    http_exception_handler,
+    validation_exception_handler,
+)
+from app.middleware.security_headers import SecurityHeadersMiddleware
+from app.routers import auth, store, admin, advertisement, table, category, menu
 
 import logging
-from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-
-from backend.app.config import get_settings
-from backend.app.routers import category, menu
-
-settings = get_settings()
-
-logger = logging.getLogger(__name__)
+# structlog 설정
+structlog.configure(
+    processors=[
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.processors.add_log_level,
+        structlog.processors.JSONRenderer(),
+    ],
+    wrapper_class=structlog.make_filtering_bound_logger(
+        logging.getLevelName(settings.LOG_LEVEL)
+    ),
+)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan handler."""
-    logger.info("Application starting up")
+    """애플리케이션 라이프사이클 관리."""
+    await init_db()
     yield
-    logger.info("Application shutting down")
+    await close_db()
 
 
-app = FastAPI(
-    title=settings.APP_NAME,
-    version=settings.APP_VERSION,
-    lifespan=lifespan,
-)
-
-# CORS Middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-# Global Error Handler (SECURITY-15, SECURITY-09)
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-    """Global exception handler that returns generic error messages."""
-    logger.error(
-        "Unhandled exception",
-        extra={
-            "path": request.url.path,
-            "method": request.method,
-            "error_type": type(exc).__name__,
-            "error_message": str(exc),
-        },
-    )
-    return JSONResponse(
-        status_code=500,
-        content={"detail": "Internal server error"},
+def create_app() -> FastAPI:
+    """FastAPI 앱 팩토리."""
+    app = FastAPI(
+        title="테이블오더 서비스 API",
+        description="테이블오더 서비스 Backend API",
+        version="1.0.0",
+        lifespan=lifespan,
     )
 
+    # 미들웨어 등록
+    app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.CORS_ORIGINS,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+        allow_headers=["Authorization", "Content-Type"],
+    )
 
-# Register Routers
-app.include_router(category.router, prefix="/api", tags=["categories"])
-app.include_router(menu.router, prefix="/api", tags=["menus"])
+    # 예외 핸들러 등록
+    app.add_exception_handler(StarletteHTTPException, http_exception_handler)
+    app.add_exception_handler(RequestValidationError, validation_exception_handler)
+    app.add_exception_handler(Exception, general_exception_handler)
+
+    # 라우터 등록
+    app.include_router(auth.router)
+    app.include_router(store.router)
+    app.include_router(admin.router)
+    app.include_router(advertisement.router)
+    app.include_router(table.router)
+    app.include_router(category.router, prefix="/api")
+    app.include_router(menu.router, prefix="/api")
+
+    # 정적 파일 서빙
+    import os
+    os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+    app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
+
+    return app
 
 
-@app.get("/api/health", tags=["health"])
+app = create_app()
+
+
+@app.get("/health")
 async def health_check():
-    """Health check endpoint."""
-    return {"status": "ok", "service": settings.APP_NAME}
+    return {"status": "ok"}

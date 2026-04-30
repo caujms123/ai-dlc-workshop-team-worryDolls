@@ -5,7 +5,7 @@ import logging
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.models.menu import Menu
+from app.models.menu import Menu
 
 logger = logging.getLogger(__name__)
 

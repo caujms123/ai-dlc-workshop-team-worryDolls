@@ -1,128 +1,129 @@
-# Integration Test Instructions - Unit 2: 메뉴 관리
+# Integration Test Instructions - Unit 4
 
-## Purpose
-Unit 2 (메뉴 관리)와 다른 Unit 간의 상호작용을 테스트합니다.
-
----
-
-## Unit 간 통합 포인트
-
-### Unit 1 → Unit 2: 인증 + 파일 업로드
-| 통합 포인트 | 설명 |
-|---|---|
-| AuthMiddleware | JWT 토큰 검증, STORE_ADMIN 역할 확인 |
-| FileUploadService | 메뉴 이미지 업로드/삭제 |
-| Store 모델 | Category, Menu의 FK 참조 |
-
-### Unit 2 → Unit 3: 메뉴 → 주문
-| 통합 포인트 | 설명 |
-|---|---|
-| Menu 데이터 | 주문 생성 시 메뉴 유효성 검증 |
-| 가격 정보 | 주문 금액 계산에 메뉴 가격 사용 |
-
-### Unit 2 → Unit 4: 메뉴 → 고객 UI
-| 통합 포인트 | 설명 |
-|---|---|
-| 고객 메뉴 API | 장바구니에 메뉴 추가 시 메뉴 데이터 사용 |
-| 이미지 경로 | 고객 화면에서 메뉴 이미지 표시 |
+## 목적
+Unit 4의 컴포넌트 간 통합 및 다른 Unit과의 연동을 검증합니다.
 
 ---
 
-## Integration Test Scenarios
-
-### Scenario 1: 인증된 관리자의 메뉴 CRUD
-
-**전제 조건**: Unit 1 AuthService가 동작 중
-
-```
-1. POST /api/auth/admin/login → JWT 토큰 획득
-2. POST /api/stores/{store_id}/categories (Authorization: Bearer {token})
-   → 201 Created (인증 성공)
-3. POST /api/stores/{store_id}/menus (Authorization: Bearer {token}, multipart)
-   → 201 Created (이미지 업로드 포함)
-4. 토큰 없이 POST /api/stores/{store_id}/menus
-   → 401 Unauthorized
-5. 다른 매장 관리자 토큰으로 접근
-   → 403 Forbidden
-```
-
-### Scenario 2: 메뉴 이미지 업로드 통합
-
-**전제 조건**: Unit 1 FileUploadService가 동작 중
-
-```
-1. 메뉴 등록 시 이미지 파일 첨부
-   → 이미지가 uploads/menus/{store_id}/ 에 저장됨
-2. 메뉴 수정 시 새 이미지 첨부
-   → 기존 이미지 삭제, 새 이미지 저장
-3. 메뉴 삭제
-   → 이미지 파일도 함께 삭제됨
-4. GET /api/uploads/{image_path}
-   → 이미지 파일 정상 서빙
-```
-
-### Scenario 3: 고객 메뉴 조회 → 장바구니 추가
-
-**전제 조건**: Unit 4 CartManager가 동작 중
-
-```
-1. GET /api/customer/stores/{store_id}/menus
-   → 카테고리별 그룹화된 메뉴 목록 반환
-2. 고객 UI에서 메뉴 카드 터치 → 상세 팝업
-3. "장바구니에 추가" 클릭
-   → cartStore.addItem(menu) 호출
-4. 장바구니에 메뉴 정보(id, name, price) 저장 확인
-```
-
-### Scenario 4: 메뉴 변경 → 주문 영향
-
-```
-1. 관리자가 메뉴 가격 변경 (9000 → 12000)
-2. 이미 장바구니에 담긴 메뉴의 가격은 변경되지 않음 (로컬 저장)
-3. 새로 장바구니에 추가하면 변경된 가격 적용
-4. 관리자가 메뉴를 is_available=false로 변경
-5. 고객 메뉴 조회 시 해당 메뉴 미표시
-```
+## 사전 조건
+- MySQL 실행 중, table_order DB 생성됨
+- Backend 서버 실행 중 (port 8000)
+- Unit 1 (Auth) 코드가 통합된 상태
 
 ---
 
-## 수동 통합 테스트 절차
+## 시나리오 1: 테이블 등록 → 로그인 → 광고 화면
 
-### 환경 준비
+### 설명
+매장 관리자가 테이블을 등록하고, 고객이 해당 테이블로 로그인하여 광고 화면을 확인
 
-```bash
-# 1. Backend 서버 실행
-cd backend
-source venv/bin/activate
-uvicorn backend.app.main:app --reload --port 8000
+### 테스트 단계
+1. **매장 관리자 로그인** (Unit 1 API)
+   ```bash
+   curl -X POST http://localhost:8000/api/auth/admin/login \
+     -H "Content-Type: application/json" \
+     -d '{"store_code":"store1","username":"admin","password":"password"}'
+   ```
 
-# 2. Admin Frontend 실행
-cd frontend/admin
-npm run dev
+2. **테이블 등록**
+   ```bash
+   curl -X POST http://localhost:8000/api/stores/1/tables \
+     -H "Authorization: Bearer {token}" \
+     -H "Content-Type: application/json" \
+     -d '{"table_number":1,"password":"1234"}'
+   ```
+   - 기대: 201 Created, table_number=1
 
-# 3. Customer Frontend 실행
-cd frontend/customer
-npm run dev
-```
+3. **테이블 로그인** (Unit 1 API)
+   ```bash
+   curl -X POST http://localhost:8000/api/auth/table/login \
+     -H "Content-Type: application/json" \
+     -d '{"store_code":"store1","table_number":1,"password":"1234"}'
+   ```
+   - 기대: 200 OK, access_token 반환
 
-### 테스트 실행
+4. **광고 목록 조회** (Unit 1 API)
+   ```bash
+   curl http://localhost:8000/api/customer/stores/1/advertisements \
+     -H "Authorization: Bearer {table_token}"
+   ```
+   - 기대: 200 OK, 광고 목록 (빈 배열 또는 등록된 광고)
 
-1. **Admin Frontend** (`http://localhost:5174/menu`)
-   - 카테고리 등록 → 목록에 표시 확인
-   - 메뉴 등록 (이미지 포함) → 목록에 표시 확인
-   - 메뉴 수정 → 변경 사항 반영 확인
-   - 메뉴 순서 변경 → 순서 반영 확인
-   - 메뉴 삭제 → 목록에서 제거 확인
-   - 카테고리 삭제 (메뉴 있을 때) → 409 에러 확인
+---
 
-2. **Customer Frontend** (`http://localhost:5173/menu`)
-   - 카테고리 탭 표시 확인
-   - 메뉴 카드 그리드 (2열) 표시 확인
-   - 메뉴 카드 터치 → 상세 팝업 확인
-   - 이미지 lazy loading 확인
-   - 품절 메뉴 미표시 확인
+## 시나리오 2: 장바구니 → 결제 선택 → 주문 생성
 
-3. **API 직접 테스트** (`http://localhost:8000/docs`)
-   - Swagger UI에서 각 엔드포인트 테스트
-   - 입력 검증 에러 확인 (422)
-   - 존재하지 않는 리소스 접근 (404)
+### 설명
+고객이 장바구니에 메뉴를 담고, 결제 방식을 선택한 후 주문을 생성
+
+### 테스트 단계
+1. **메뉴 조회** (Unit 2 API)
+   ```bash
+   curl http://localhost:8000/api/customer/stores/1/menus \
+     -H "Authorization: Bearer {table_token}"
+   ```
+
+2. **장바구니 추가** (Frontend localStorage - 수동 테스트)
+   - 메뉴 카드 터치 → 장바구니 추가
+   - 장바구니 아이콘 배지 수량 확인
+
+3. **주문 생성** (Unit 3 API)
+   ```bash
+   curl -X POST http://localhost:8000/api/orders \
+     -H "Authorization: Bearer {table_token}" \
+     -H "Content-Type: application/json" \
+     -d '{"table_id":1,"payment_type":"SINGLE_PAY","items":[{"menu_id":1,"quantity":2}]}'
+   ```
+   - 기대: 201 Created, order_number 반환
+
+---
+
+## 시나리오 3: 이용 완료 처리
+
+### 설명
+매장 관리자가 테이블 이용 완료를 처리하고 세션이 종료되는지 확인
+
+### 테스트 단계
+1. **현재 세션 확인**
+   ```bash
+   curl http://localhost:8000/api/tables/1/session \
+     -H "Authorization: Bearer {admin_token}"
+   ```
+   - 기대: 200 OK, is_active=true
+
+2. **이용 완료 처리**
+   ```bash
+   curl -X POST http://localhost:8000/api/tables/1/complete \
+     -H "Authorization: Bearer {admin_token}"
+   ```
+   - 기대: 200 OK, "이용 완료 처리되었습니다."
+
+3. **세션 확인 (종료됨)**
+   ```bash
+   curl http://localhost:8000/api/tables/1/session \
+     -H "Authorization: Bearer {admin_token}"
+   ```
+   - 기대: 404 (활성 세션 없음)
+
+---
+
+## 시나리오 4: 사다리 타기 미니게임 (Frontend 수동 테스트)
+
+### 테스트 단계
+1. 장바구니에서 "주문하기" 클릭
+2. 결제 방식 선택 팝업 확인
+3. 오른쪽 상단 🎲 버튼 클릭
+4. 인원 수 선택 (예: 4명)
+5. "시작!" 버튼 클릭
+6. 사다리 애니메이션 확인 (Canvas 렌더링)
+7. 꽝 결과 표시 확인 (빨간색 강조)
+8. 5초 카운트다운 확인
+9. 자동으로 결제 방식 선택 팝업 복귀 확인
+
+### 검증 항목
+- [ ] 인원 선택 UI 정상 표시 (2~10명)
+- [ ] 사다리 Canvas 렌더링 정상
+- [ ] 애니메이션 부드럽게 동작
+- [ ] 꽝 결과 강조 연출
+- [ ] 5초 카운트다운 정확
+- [ ] 팝업 복귀 정상

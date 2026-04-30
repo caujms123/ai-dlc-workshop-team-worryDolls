@@ -6,14 +6,14 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.database import get_db
-from backend.app.schemas.category import (
+from app.database import get_db
+from app.schemas.category import (
     CategoryCreate,
     CategoryListResponse,
     CategoryResponse,
     CategoryUpdate,
 )
-from backend.app.services.category_service import CategoryService
+from app.services.category_service import CategoryService
 
 logger = logging.getLogger(__name__)
 

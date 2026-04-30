@@ -1,117 +1,101 @@
-# Build Instructions - Unit 2: 메뉴 관리
+# Build Instructions - Unit 4: 고객 UI + 테이블 관리
 
 ## Prerequisites
 
 | 항목 | 요구 버전 |
 |---|---|
-| **Python** | 3.11+ |
-| **Node.js** | 18+ |
-| **npm** | 9+ |
-| **MySQL** | 8.0+ |
+| Python | 3.11+ |
+| Node.js | 18+ |
+| npm | 9+ |
+| MySQL | 8.0+ |
 
-### 환경 변수
+## 환경 변수
 
-```bash
-# .env 파일 (backend/ 디렉토리에 생성)
+`.env` 파일을 `backend/` 디렉토리에 생성:
+```
 DATABASE_URL=mysql+aiomysql://root:password@localhost:3306/table_order
 JWT_SECRET_KEY=your-secret-key-change-in-production
-UPLOAD_DIR=uploads
-DEBUG=true
-DATABASE_ECHO=false
-CORS_ORIGINS=["http://localhost:5173","http://localhost:5174"]
+JWT_ALGORITHM=HS256
+JWT_EXPIRE_HOURS=16
+UPLOAD_DIR=./uploads
+MAX_UPLOAD_SIZE=5242880
+CORS_ORIGINS=http://localhost:5173,http://localhost:5174
+LOG_LEVEL=INFO
 ```
-
----
 
 ## Build Steps
 
-### 1. Database 준비
-
+### 1. MySQL 데이터베이스 생성
 ```bash
-# MySQL 데이터베이스 생성
 mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS table_order CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 ```
 
-### 2. Backend 빌드
-
+### 2. Backend 의존성 설치
 ```bash
-# 가상환경 생성 및 활성화
 cd backend
-python -m venv venv
-source venv/bin/activate  # macOS/Linux
-
-# 의존성 설치
 pip install -r requirements.txt
-
-# 테스트용 추가 의존성 (SQLite async)
-pip install aiosqlite
-
-# 업로드 디렉토리 생성
-mkdir -p uploads/menus
 ```
 
-### 3. Backend 서버 실행
+> `requirements.txt`가 아직 없다면 아래 패키지를 설치:
+```bash
+pip install fastapi uvicorn sqlalchemy aiomysql alembic python-jose passlib[bcrypt] python-multipart pydantic structlog slowapi httpx pytest pytest-asyncio
+```
 
+### 3. DB 마이그레이션 (Alembic 설정 후)
 ```bash
 cd backend
-source venv/bin/activate
-uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
+alembic upgrade head
 ```
 
-**확인**: `http://localhost:8000/docs` 에서 Swagger UI 접근 가능
+> Alembic 미설정 시 수동 테이블 생성:
+```sql
+CREATE TABLE table_info (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    store_id BIGINT NOT NULL,
+    table_number INT NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE NOT NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    UNIQUE KEY uq_store_table_number (store_id, table_number)
+);
 
-### 4. Admin Frontend 빌드
+CREATE TABLE table_session (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    table_id BIGINT NOT NULL,
+    store_id BIGINT NOT NULL,
+    started_at DATETIME NOT NULL,
+    ended_at DATETIME NULL,
+    is_active BOOLEAN DEFAULT TRUE NOT NULL,
+    INDEX ix_table_session_active (table_id, is_active),
+    FOREIGN KEY (table_id) REFERENCES table_info(id)
+);
+```
 
+### 4. Backend 서버 실행
 ```bash
-cd frontend/admin
-npm install
-npm run build
+cd backend
+uvicorn app.main:app --reload --port 8000
 ```
 
-**개발 서버 실행**:
-```bash
-npm run dev
-# http://localhost:5174 에서 접근
-```
-
-### 5. Customer Frontend 빌드
-
+### 5. Customer Frontend 의존성 설치 및 실행
 ```bash
 cd frontend/customer
 npm install
-npm run build
-```
-
-**개발 서버 실행**:
-```bash
 npm run dev
-# http://localhost:5173 에서 접근
 ```
 
----
-
-## Build Artifacts
-
-| 산출물 | 경로 |
-|---|---|
-| Backend API | `http://localhost:8000` |
-| API 문서 (Swagger) | `http://localhost:8000/docs` |
-| Admin Frontend | `frontend/admin/dist/` |
-| Customer Frontend | `frontend/customer/dist/` |
-| 업로드 파일 | `uploads/` |
-
----
+### 6. 빌드 확인
+- Backend API 문서: http://localhost:8000/docs
+- Customer Frontend: http://localhost:5173
 
 ## Troubleshooting
 
 ### MySQL 연결 실패
-- **원인**: MySQL 서비스 미실행 또는 인증 정보 불일치
-- **해결**: `mysql.server start` 실행, `.env` 파일의 DATABASE_URL 확인
-
-### aiomysql 설치 실패
-- **원인**: MySQL 클라이언트 라이브러리 미설치
-- **해결**: `brew install mysql-client` (macOS)
+- MySQL 서비스 실행 확인: `mysql -u root -p`
+- DATABASE_URL 환경 변수 확인
+- aiomysql 드라이버 설치 확인
 
 ### Frontend 빌드 실패
-- **원인**: Node.js 버전 불일치
-- **해결**: `node -v`로 18+ 확인, `nvm use 18` 등으로 전환
+- Node.js 18+ 확인: `node --version`
+- `node_modules` 삭제 후 재설치: `rm -rf node_modules && npm install`

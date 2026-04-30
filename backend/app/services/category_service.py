@@ -5,9 +5,9 @@ import logging
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.models.category import Category
-from backend.app.repositories.category_repo import CategoryRepository
-from backend.app.schemas.category import CategoryCreate, CategoryUpdate
+from app.models.category import Category
+from app.repositories.category_repo import CategoryRepository
+from app.schemas.category import CategoryCreate, CategoryUpdate
 
 logger = logging.getLogger(__name__)
 

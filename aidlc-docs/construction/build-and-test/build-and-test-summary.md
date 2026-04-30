@@ -1,88 +1,79 @@
-# Build and Test Summary - Unit 2: 메뉴 관리
+# Build and Test Summary - Unit 4
 
 ## Build Status
 
 | 항목 | 상태 |
 |---|---|
-| **Backend (FastAPI)** | ✅ 빌드 준비 완료 |
-| **Admin Frontend (Vue.js)** | ✅ 빌드 준비 완료 |
-| **Customer Frontend (Vue.js)** | ✅ 빌드 준비 완료 |
-
-### Build Artifacts
-- Backend API: `backend/app/` (uvicorn으로 실행)
-- Admin Frontend: `frontend/admin/dist/` (npm run build)
-- Customer Frontend: `frontend/customer/dist/` (npm run build)
-- API 문서: `http://localhost:8000/docs` (Swagger UI 자동 생성)
-
----
+| **Backend (FastAPI)** | ✅ 코드 생성 완료 |
+| **Customer Frontend (Vue.js)** | ✅ 코드 생성 완료 |
+| **Admin Frontend (Vue.js)** | ✅ 코드 생성 완료 |
+| **DB 스키마** | ✅ 모델 정의 완료 |
 
 ## Test Execution Summary
 
-### Unit Tests
+### Backend 단위 테스트
+- **총 테스트**: 7개
+- **대상**: TableService (create, get, complete, session)
+- **프레임워크**: pytest + pytest-asyncio
+- **상태**: ✅ 작성 완료
 
-| 레이어 | 테스트 파일 | 예상 테스트 수 | 상태 |
-|---|---|---|---|
-| Backend Repository | `test_category_repo.py`, `test_menu_repo.py` | ~15 | ✅ 작성 완료 |
-| Backend Service | `test_category_service.py`, `test_menu_service.py` | ~15 | ✅ 작성 완료 |
-| Backend Router | `test_category_router.py`, `test_menu_router.py` | ~16 | ✅ 작성 완료 |
-| Admin Frontend | 4개 spec 파일 | ~26 | ✅ 작성 완료 |
-| Customer Frontend | 4개 spec 파일 | ~20 | ✅ 작성 완료 |
-| **합계** | **14개 파일** | **~92** | ✅ |
+### Frontend 단위 테스트
+- **총 테스트**: 8개
+- **대상**: CartStore (addItem, removeItem, updateQuantity, clearCart, getters)
+- **프레임워크**: Vitest
+- **상태**: ✅ 작성 완료
 
-### Integration Tests
-- **상태**: 수동 테스트 절차 문서화 완료
-- **시나리오**: 4개 (인증 CRUD, 이미지 업로드, 고객 장바구니, 메뉴 변경 영향)
-- **자동화**: Unit 1~4 통합 후 자동화 가능
+### 통합 테스트
+- **시나리오**: 4개
+  1. 테이블 등록 → 로그인 → 광고 화면
+  2. 장바구니 → 결제 선택 → 주문 생성
+  3. 이용 완료 처리
+  4. 사다리 타기 미니게임 (수동)
+- **상태**: ✅ 지침 작성 완료 (Unit 1~3 통합 후 실행)
 
-### Performance Tests
-- **상태**: locust 스크립트 및 실행 절차 문서화 완료
-- **목표**: 고객 메뉴 조회 P95 < 300ms, 동시 50~100 테이블
+## 생성된 파일 목록
 
-### Additional Tests
-- **Contract Tests**: N/A (모놀리식 아키텍처)
-- **Security Tests**: SECURITY-05, 08, 09, 15 코드 레벨 적용 완료
-- **E2E Tests**: 수동 테스트 절차 문서화 완료
-
----
-
-## Story Coverage
-
-| Story ID | 제목 | 구현 | 테스트 |
-|---|---|---|---|
-| US-MA-02 | 메뉴 조회 | ✅ | ✅ |
-| US-MA-03 | 메뉴 등록 | ✅ | ✅ |
-| US-MA-04 | 메뉴 수정 | ✅ | ✅ |
-| US-MA-05 | 메뉴 삭제 | ✅ | ✅ |
-| US-MA-06 | 메뉴 노출 순서 조정 | ✅ | ✅ |
-| US-CU-04 | 카테고리별 메뉴 조회 | ✅ | ✅ |
-
----
-
-## Security Compliance
-
-| 규칙 | 상태 |
+### Backend
+| 파일 | 설명 |
 |---|---|
-| SECURITY-05 (입력 검증) | ✅ Compliant |
-| SECURITY-08 (접근 제어) | ✅ Compliant (TODO: AuthMiddleware 통합) |
-| SECURITY-09 (보안 강화) | ✅ Compliant |
-| SECURITY-10 (공급망) | ✅ Compliant |
-| SECURITY-11 (보안 설계) | ✅ Compliant |
-| SECURITY-15 (예외 처리) | ✅ Compliant |
+| `backend/app/models/table.py` | TableInfo, TableSession 모델 |
+| `backend/app/schemas/table.py` | Pydantic 스키마 |
+| `backend/app/repositories/table_repo.py` | Repository 레이어 |
+| `backend/app/services/table_service.py` | 비즈니스 로직 |
+| `backend/app/routers/table.py` | API 라우터 |
+| `backend/app/database.py` | DB 연결 설정 |
+| `backend/tests/test_table.py` | 단위 테스트 |
 
----
+### Customer Frontend
+| 파일 | 설명 |
+|---|---|
+| `src/views/AdScreen.vue` | 광고 화면 (자동 슬라이드) |
+| `src/views/TableAuthView.vue` | 테이블 인증 |
+| `src/views/CartView.vue` | 장바구니 |
+| `src/components/PaymentSelector.vue` | 결제 방식 선택 |
+| `src/components/LadderGame.vue` | 사다리 타기 미니게임 |
+| `src/components/BottomNav.vue` | 하단 네비게이션 |
+| `src/stores/cart.js` | 장바구니 상태 관리 |
+| `src/stores/tableAuth.js` | 인증 상태 관리 |
+| `src/router/index.js` | 라우터 (인증 가드) |
+| `src/App.vue` | 앱 루트 (비활성 감지) |
+| `src/__tests__/cart.test.js` | 장바구니 테스트 |
+
+### Admin Frontend
+| 파일 | 설명 |
+|---|---|
+| `src/views/TableView.vue` | 테이블 관리 |
+
+## 다른 Unit과의 의존성
+
+| 의존 대상 | 상태 | 설명 |
+|---|---|---|
+| Unit 1 (Auth) | ⏳ 대기 | AuthMiddleware, 로그인 API 필요 |
+| Unit 2 (Menu) | ⏳ 대기 | MenuView 컴포넌트 구현 필요 |
+| Unit 3 (Order) | ⏳ 대기 | OrderConfirmView, OrderHistoryView 구현 필요 |
 
 ## Overall Status
-
-| 항목 | 상태 |
-|---|---|
-| **Build** | ✅ Ready |
-| **Unit Tests** | ✅ Written (92개) |
-| **Integration Tests** | 📋 Manual procedures documented |
-| **Performance Tests** | 📋 Scripts and procedures documented |
-| **Ready for Operations** | ✅ Yes (Unit 2 scope) |
-
-## 다른 Unit 통합 시 필요 작업
-
-1. **Unit 1 통합**: AuthMiddleware 연결 (TODO 주석 해소), FileUploadService 교체
-2. **Unit 3 통합**: 주문 생성 시 메뉴 유효성 검증 연동
-3. **Unit 4 통합**: 고객 장바구니에 메뉴 추가 연동
+- **Build**: ✅ 코드 생성 완료
+- **Unit Tests**: ✅ 작성 완료 (15개)
+- **Integration Tests**: ✅ 지침 작성 완료
+- **다른 Unit 통합 후**: 전체 통합 테스트 실행 필요

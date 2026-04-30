@@ -7,12 +7,12 @@ import pytest_asyncio
 from fastapi import HTTPException, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.models.category import Category
-from backend.app.models.menu import Menu
-from backend.app.schemas.category import CategoryCreate
-from backend.app.schemas.menu import MenuCreate, MenuOrderUpdate, MenuUpdate
-from backend.app.services.category_service import CategoryService
-from backend.app.services.menu_service import MenuService, SimpleFileUploadService
+from app.models.category import Category
+from app.models.menu import Menu
+from app.schemas.category import CategoryCreate
+from app.schemas.menu import MenuCreate, MenuOrderUpdate, MenuUpdate
+from app.services.category_service import CategoryService
+from app.services.menu_service import MenuService, SimpleFileUploadService
 
 
 @pytest.fixture

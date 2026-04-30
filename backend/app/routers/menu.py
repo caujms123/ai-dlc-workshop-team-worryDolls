@@ -6,8 +6,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, Form, Path, Query, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.database import get_db
-from backend.app.schemas.menu import (
+from app.database import get_db
+from app.schemas.menu import (
     CategoryWithMenusResponse,
     CustomerMenuResponse,
     MenuCreate,
@@ -16,7 +16,7 @@ from backend.app.schemas.menu import (
     MenuResponse,
     MenuUpdate,
 )
-from backend.app.services.menu_service import MenuService
+from app.services.menu_service import MenuService
 
 logger = logging.getLogger(__name__)
 

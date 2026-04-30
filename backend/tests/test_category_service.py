@@ -5,11 +5,11 @@ import pytest_asyncio
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.models.category import Category
-from backend.app.models.menu import Menu
-from backend.app.repositories.category_repo import CategoryRepository
-from backend.app.schemas.category import CategoryCreate, CategoryUpdate
-from backend.app.services.category_service import CategoryService
+from app.models.category import Category
+from app.models.menu import Menu
+from app.repositories.category_repo import CategoryRepository
+from app.schemas.category import CategoryCreate, CategoryUpdate
+from app.services.category_service import CategoryService
 
 
 @pytest.fixture
