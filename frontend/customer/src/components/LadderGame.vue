@@ -79,6 +79,19 @@ function generateLadder(count) {
     }
   }
 
+  // 검증: 최소 1명이 꽝에 도달하는지 확인, 아니면 재생성
+  let hasLoser = false
+  for (let i = 0; i < count; i++) {
+    const result = calculatePath({ columns: count, rows: segments, bridges, loserIdx }, i)
+    if (result.endCol === loserIdx) {
+      hasLoser = true
+      break
+    }
+  }
+  if (!hasLoser) {
+    return generateLadder(count) // 재귀 재생성
+  }
+
   return { columns: count, rows: segments, bridges, loserIdx }
 }
 

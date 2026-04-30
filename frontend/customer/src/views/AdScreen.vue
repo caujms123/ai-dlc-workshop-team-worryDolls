@@ -1,5 +1,5 @@
 <template>
-  <div class="ad-screen" @click="goToMenu" @touchstart="goToMenu">
+  <div class="ad-screen" @click.prevent="goToMenu">
     <div v-if="advertisements.length > 0" class="slideshow">
       <transition name="fade" mode="out-in">
         <img

@@ -1,9 +1,13 @@
 """데이터베이스 연결 설정"""
 
+import os
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 
-DATABASE_URL = "mysql+aiomysql://root:password@localhost:3306/table_order"
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "mysql+aiomysql://root:password@localhost:3306/table_order"
+)
 
 engine = create_async_engine(DATABASE_URL, echo=False, pool_pre_ping=True)
 async_session_maker = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)

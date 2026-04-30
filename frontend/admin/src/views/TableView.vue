@@ -85,13 +85,18 @@ const showForm = ref(false)
 const editingTable = ref(null)
 const confirmingTable = ref(null)
 const formData = ref({ table_number: null, password: '' })
+const errorMessage = ref('')
 
 // TODO: storeId는 인증 정보에서 가져와야 함 (Unit 1 연동)
 const storeId = 1
 
 async function fetchTables() {
-  const res = await axios.get(`/api/stores/${storeId}/tables`)
-  tables.value = res.data
+  try {
+    const res = await axios.get(`/api/stores/${storeId}/tables`)
+    tables.value = res.data
+  } catch (err) {
+    errorMessage.value = '테이블 목록을 불러오는데 실패했습니다.'
+  }
 }
 
 function editTable(table) {
@@ -107,17 +112,21 @@ function closeForm() {
 }
 
 async function handleSubmit() {
-  if (editingTable.value) {
-    if (formData.value.password) {
-      await axios.put(`/api/tables/${editingTable.value.id}`, {
-        password: formData.value.password,
-      })
+  try {
+    if (editingTable.value) {
+      if (formData.value.password) {
+        await axios.put(`/api/tables/${editingTable.value.id}`, {
+          password: formData.value.password,
+        })
+      }
+    } else {
+      await axios.post(`/api/stores/${storeId}/tables`, formData.value)
     }
-  } else {
-    await axios.post(`/api/stores/${storeId}/tables`, formData.value)
+    closeForm()
+    await fetchTables()
+  } catch (err) {
+    errorMessage.value = err.response?.data?.detail || '처리에 실패했습니다.'
   }
-  closeForm()
-  await fetchTables()
 }
 
 function confirmComplete(table) {
@@ -125,9 +134,14 @@ function confirmComplete(table) {
 }
 
 async function handleComplete() {
-  await axios.post(`/api/tables/${confirmingTable.value.id}/complete`)
-  confirmingTable.value = null
-  await fetchTables()
+  try {
+    await axios.post(`/api/tables/${confirmingTable.value.id}/complete`)
+    confirmingTable.value = null
+    await fetchTables()
+  } catch (err) {
+    errorMessage.value = err.response?.data?.detail || '이용 완료 처리에 실패했습니다.'
+    confirmingTable.value = null
+  }
 }
 
 onMounted(fetchTables)

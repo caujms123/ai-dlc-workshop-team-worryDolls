@@ -32,7 +32,7 @@ export const useTableAuthStore = defineStore('tableAuth', {
 
       localStorage.setItem(TOKEN_KEY, data.access_token)
       localStorage.setItem(CREDENTIALS_KEY, JSON.stringify({
-        storeCode, tableNumber, password,
+        storeCode, tableNumber,
       }))
 
       // axios 기본 헤더 설정
@@ -52,17 +52,7 @@ export const useTableAuthStore = defineStore('tableAuth', {
         this.tableNumber = response.data.table_number
         return true
       } catch {
-        // 토큰 만료 시 저장된 자격 증명으로 재로그인
-        const creds = JSON.parse(localStorage.getItem(CREDENTIALS_KEY) || 'null')
-        if (creds) {
-          try {
-            await this.login(creds.storeCode, creds.tableNumber, creds.password)
-            return true
-          } catch {
-            this.logout()
-            return false
-          }
-        }
+        // 토큰 만료 시 로그아웃 → 초기 설정 화면으로 이동
         this.logout()
         return false
       }
