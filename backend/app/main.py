@@ -16,7 +16,9 @@ from app.middleware.error_handler import (
     validation_exception_handler,
 )
 from app.middleware.security_headers import SecurityHeadersMiddleware
-from app.routers import auth, store, admin, advertisement, table
+from app.routers import auth, store, admin, advertisement, table, category, menu
+
+import logging
 
 # structlog 설정
 structlog.configure(
@@ -26,7 +28,7 @@ structlog.configure(
         structlog.processors.JSONRenderer(),
     ],
     wrapper_class=structlog.make_filtering_bound_logger(
-        structlog.get_level_from_name(settings.LOG_LEVEL)
+        logging.getLevelName(settings.LOG_LEVEL)
     ),
 )
 
@@ -69,6 +71,8 @@ def create_app() -> FastAPI:
     app.include_router(admin.router)
     app.include_router(advertisement.router)
     app.include_router(table.router)
+    app.include_router(category.router, prefix="/api")
+    app.include_router(menu.router, prefix="/api")
 
     # 정적 파일 서빙
     import os

@@ -1,4 +1,4 @@
-"""테스트 공통 Fixture 정의."""
+"""테스트 공통 Fixture 정의 (Unit 2 + Unit 3)."""
 
 import asyncio
 from datetime import datetime
