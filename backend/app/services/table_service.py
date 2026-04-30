@@ -1,17 +1,26 @@
 """테이블 서비스 (Unit 4)"""
 
 import structlog
-from datetime import datetime
+import bcrypt
+from datetime import datetime, timezone
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from passlib.context import CryptContext
 
 from app.models.table import TableInfo, TableSession
 from app.repositories.table_repo import TableRepository, TableSessionRepository
 from app.schemas.table import TableCreate, TableUpdate
 
 logger = structlog.get_logger()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def hash_password(password: str) -> str:
+    """bcrypt 비밀번호 해싱"""
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
+def verify_password(plain: str, hashed: str) -> bool:
+    """bcrypt 비밀번호 검증"""
+    return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
 
 
 class TableService:
@@ -35,7 +44,7 @@ class TableService:
         table = TableInfo(
             store_id=store_id,
             table_number=data.table_number,
-            password_hash=pwd_context.hash(data.password),
+            password_hash=hash_password(data.password),
             is_active=True,
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
@@ -73,7 +82,7 @@ class TableService:
         """테이블 수정 (비밀번호 변경)"""
         table = await self.get_table_by_id(table_id)
         if data.password:
-            table.password_hash = pwd_context.hash(data.password)
+            table.password_hash = hash_password(data.password)
         table.updated_at = datetime.utcnow()
         return await self.table_repo.update(table)
 
