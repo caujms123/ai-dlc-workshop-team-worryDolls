@@ -16,7 +16,7 @@ from app.middleware.error_handler import (
     validation_exception_handler,
 )
 from app.middleware.security_headers import SecurityHeadersMiddleware
-from app.routers import auth, store, admin, advertisement
+from app.routers import auth, store, admin, advertisement, table
 
 # structlog 설정
 structlog.configure(
@@ -48,7 +48,7 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # 미들웨어 등록 (역순으로 실행됨)
+    # 미들웨어 등록
     app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(
         CORSMiddleware,
@@ -68,8 +68,9 @@ def create_app() -> FastAPI:
     app.include_router(store.router)
     app.include_router(admin.router)
     app.include_router(advertisement.router)
+    app.include_router(table.router)
 
-    # 정적 파일 서빙 (업로드된 이미지)
+    # 정적 파일 서빙
     import os
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
     app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
@@ -78,3 +79,8 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
