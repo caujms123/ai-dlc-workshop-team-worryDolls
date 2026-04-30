@@ -4,7 +4,7 @@
 - **Project Name**: Table Order Service (테이블오더 서비스)
 - **Project Type**: Greenfield
 - **Start Date**: 2026-04-30T09:00:00Z
-- **Current Stage**: CONSTRUCTION - NFR Design (Complete, all units)
+- **Current Stage**: CONSTRUCTION - Build and Test (Unit 4 Complete)
 
 ## Workspace State
 - **Existing Code**: No
@@ -36,8 +36,8 @@
 - [x] NFR Requirements - COMPLETED (Unit 1~4 전체)
 - [x] NFR Design - COMPLETED (Unit 1~4 전체)
 - [ ] Infrastructure Design - SKIP (온프레미스, 클라우드 인프라 불필요)
-- [ ] Code Generation - EXECUTE
-- [ ] Build and Test - EXECUTE
+- [x] Code Generation - COMPLETED (Unit 4)
+- [x] Build and Test - COMPLETED (Unit 4)
 
 ### OPERATIONS PHASE
 - [ ] Operations (PLACEHOLDER)

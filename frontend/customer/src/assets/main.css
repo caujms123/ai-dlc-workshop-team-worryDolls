@@ -1,0 +1,328 @@
+/* 테이블오더 고객 UI 스타일 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f5f5f5;
+  color: #333;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+#customer-app {
+  max-width: 768px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: #fff;
+  position: relative;
+  padding-bottom: 70px;
+}
+
+/* 버튼 공통 */
+.btn-primary {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+  transition: background 0.2s;
+}
+.btn-primary:active { background: #c0392b; }
+.btn-primary:disabled { background: #bdc3c7; cursor: not-allowed; }
+
+.btn-secondary {
+  background: #ecf0f1;
+  color: #333;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  min-height: 44px;
+  text-decoration: none;
+  display: inline-block;
+}
+
+/* 광고 화면 */
+.ad-screen {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: #1a1a2e;
+  color: #fff;
+  position: relative;
+}
+.slideshow { width: 100%; height: 100%; position: relative; }
+.ad-image { width: 100%; height: 100%; object-fit: cover; }
+.slide-indicators {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+}
+.dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.4);
+}
+.dot.active { background: #fff; }
+.default-screen { text-align: center; }
+.default-screen h1 { font-size: 28px; margin-bottom: 12px; }
+.touch-hint {
+  position: absolute;
+  bottom: 20px;
+  font-size: 14px;
+  opacity: 0.6;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 0.8; } }
+.fade-enter-active, .fade-leave-active { transition: opacity 0.5s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+/* 인증 화면 */
+.auth-container {
+  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  justify-content: center;
+}
+.auth-form { width: 100%; max-width: 360px; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; }
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  font-size: 16px;
+  min-height: 44px;
+}
+.form-group input:focus { border-color: #e74c3c; outline: none; }
+.error { color: #e74c3c; font-size: 14px; margin-bottom: 12px; }
+
+/* 장바구니 */
+.cart-container { padding: 20px 16px; }
+.cart-container h2 { margin-bottom: 16px; }
+.empty-cart { text-align: center; padding: 60px 0; color: #999; }
+.cart-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid #eee;
+}
+.item-info { flex: 1; }
+.item-name { display: block; font-weight: 600; }
+.item-price { font-size: 13px; color: #888; }
+.item-controls { display: flex; align-items: center; gap: 12px; }
+.btn-qty {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+  background: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+}
+.qty { font-weight: 600; min-width: 24px; text-align: center; }
+.item-subtotal { font-weight: 600; min-width: 80px; text-align: right; }
+.cart-summary { margin-top: 20px; }
+.btn-clear {
+  background: none;
+  border: 1px solid #ddd;
+  padding: 8px 16px;
+  border-radius: 8px;
+  color: #999;
+  cursor: pointer;
+  font-size: 13px;
+}
+.total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  font-size: 18px;
+}
+.btn-order { width: 100%; font-size: 18px; padding: 16px; }
+
+/* 결제 방식 선택 모달 */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.payment-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+  position: relative;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.modal-header h3 { font-size: 18px; }
+.btn-ladder {
+  width: 44px; height: 44px;
+  border: none;
+  background: #f0f0f0;
+  border-radius: 50%;
+  font-size: 22px;
+  cursor: pointer;
+}
+.total-display { text-align: center; font-size: 16px; color: #666; margin-bottom: 20px; }
+.payment-options { display: flex; flex-direction: column; gap: 12px; }
+.btn-payment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  border: 2px solid #eee;
+  border-radius: 14px;
+  background: #fff;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+.btn-payment:active { border-color: #e74c3c; background: #fff5f5; }
+.btn-payment .icon { font-size: 28px; margin-bottom: 6px; }
+.btn-payment .label { font-weight: 600; font-size: 16px; }
+.btn-payment .desc { font-size: 13px; color: #999; }
+
+/* 사다리 타기 */
+.ladder-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+.ladder-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.phase-select h3 { text-align: center; margin-bottom: 16px; }
+.player-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.btn-player {
+  padding: 14px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 15px;
+  cursor: pointer;
+  min-height: 44px;
+}
+.btn-player.selected { border-color: #e74c3c; background: #fff5f5; color: #e74c3c; font-weight: 600; }
+.btn-start { width: 100%; }
+.ladder-canvas { display: block; margin: 0 auto; }
+.result-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.3);
+}
+.result-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  animation: bounceIn 0.5s ease;
+}
+.result-text { display: block; font-size: 24px; margin-bottom: 8px; }
+.result-player { display: block; font-size: 36px; font-weight: 700; color: #e74c3c; margin-bottom: 12px; }
+.countdown { font-size: 14px; color: #999; }
+@keyframes bounceIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* 하단 네비게이션 */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 768px;
+  background: #fff;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0;
+  z-index: 50;
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: #999;
+  font-size: 12px;
+  min-width: 44px;
+  min-height: 44px;
+  justify-content: center;
+  position: relative;
+}
+.nav-item.active { color: #e74c3c; }
+.nav-icon { font-size: 22px; }
+.nav-label { margin-top: 2px; }
+.badge {
+  position: absolute;
+  top: 0; right: -4px;
+  background: #e74c3c;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Placeholder */
+.placeholder { text-align: center; padding: 60px 0; color: #999; }
