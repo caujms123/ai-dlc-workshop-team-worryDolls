@@ -14,12 +14,16 @@ passlib[bcrypt]==1.7.4
 
 # Validation
 pydantic==2.5.2
+pydantic-settings==2.1.0
 
 # Logging
 structlog==23.2.0
 
 # Rate Limiting
 slowapi==0.1.9
+
+# File handling
+aiofiles==23.2.1
 
 # Testing
 pytest==7.4.3
